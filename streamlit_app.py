@@ -4,12 +4,36 @@ import hashlib
 from datetime import datetime
 import pandas as pd
 import streamlit as st
+from g_drive_service import GoogleDriveService, GoogleDriveServiceStream
+from io import BytesIO
 
-CASES_PATH = os.environ.get("CASES_PATH", "cases.csv")
-RESPONSES_PATH = os.environ.get("RESPONSES_PATH", "responses.csv")
+CRED_PATH = "sheet_credential.json"
+CASES_PATH = "cases.csv"
+RESPONSES_PATH = "simulated_cases"
 
 MEDS = ["RAASi", "BB", "MRA", "SGLT2i"]
 ACTION_CHOICES = ["no_change", "initiate", "up-titrate", "down-titrate", "stop"]
+
+
+# Streamlit secreats to ByteIO stream for g_drive_service
+def streamlit_secrets_to_bytesio(key: str) -> BytesIO:
+    if key not in st.secrets:
+        raise KeyError(f"Key '{key}' not found in Streamlit secrets.")
+    
+    data = st.secrets[key]
+    if isinstance(data, dict):
+        json_str = json.dumps(data)
+
+    elif isinstance(data, str):
+        json_str = data
+
+    else:
+        raise ValueError(f"Unsupported data type for key '{key}'. Must be dict or JSON string.")
+    
+    byte_stream = BytesIO(json_str.encode('utf-8'))
+    byte_stream.seek(0)
+    return byte_stream
+    
 
 def _safe_get(row: pd.Series, col: str, default=""):
     v = row.get(col, default)
@@ -28,18 +52,54 @@ def ensure_case_id(df: pd.DataFrame) -> pd.DataFrame:
             df["Case_ID"] = df.index.astype(str)
     return df
 
+#@st.cache_data(show_spinner=False)
+#def load_cases(path: str) -> pd.DataFrame:
+#    if not os.path.exists(path):
+#        raise FileNotFoundError(f"Missing {path}. Put cases.csv in Drive and set CASES_PATH.")
+#    df = pd.read_csv(path)
+#    df = ensure_case_id(df)
+#    return df.reset_index(drop=True)
+    
 @st.cache_data(show_spinner=False)
-def load_cases(path: str) -> pd.DataFrame:
-    if not os.path.exists(path):
-        raise FileNotFoundError(f"Missing {path}. Put cases.csv in Drive and set CASES_PATH.")
-    df = pd.read_csv(path)
+def load_cases(path: str, cred_path:str) -> pd.DataFrame:
+    selected_fields="files(id,name,webViewLink)"
+    #g_drive_service=GoogleDriveService(cred_path).build_drive()
+    stream = streamlit_secrets_to_bytesio(cred_path)
+    g_drive_service=GoogleDriveServiceStream(stream).build_drive()
+
+    list_file=g_drive_service.files().list(fields=selected_fields).execute()
+    print(list_file.get("files"))
+
+    #client = GoogleDriveService(cred_path).build_sheet()
+    client = GoogleDriveServiceStream(stream).build_sheet()
+    spreadsheet = client.open(path) 
+    worksheet = spreadsheet.sheet1 
+    worksheet_data = worksheet.get_all_records()
+    df = pd.DataFrame(worksheet_data)
+    #if not os.path.exists(path):
+    #    raise FileNotFoundError(f"Missing {path}. Put cases.csv in Drive and set CASES_PATH.")
+    
     df = ensure_case_id(df)
     return df.reset_index(drop=True)
 
-def append_response(path: str, payload: dict):
-    df_row = pd.DataFrame([payload])
-    write_header = not os.path.exists(path)
-    df_row.to_csv(path, mode="a", header=write_header, index=False)
+#def append_response(path: str, payload: dict):
+#    df_row = pd.DataFrame([payload])
+#    write_header = not os.path.exists(path)
+#    df_row.to_csv(path, mode="a", header=write_header, index=False)
+    
+def append_response(path: str, payload: list, cred_path:str):
+    stream = streamlit_secrets_to_bytesio(cred_path)
+    client = GoogleDriveServiceStream(stream).build_sheet()
+    
+    #client = GoogleDriveService(cred_path).build_sheet()
+    
+    # Accessing the desired spreadsheet 
+    spreadsheet = client.open(path) 
+    worksheet = spreadsheet.sheet1 
+    # Data to append 
+    data = payload 
+    # Appending the data 
+    worksheet.append_row(data) 
 
 def _normalize_age_sex(row: pd.Series):
     age = _safe_get(row, "Age", _safe_get(row, "age", ""))
@@ -114,7 +174,7 @@ def shared_case_indices(df: pd.DataFrame, overlap_frac: float = 0.20) -> list:
 st.set_page_config(page_title="Telehealt GDMT optimization", layout="wide")
 st.title("Telehealt GDMT optimization")
 
-cases = load_cases(CASES_PATH)
+cases = load_cases(CASES_PATH, CRED_PATH)
 
 with st.sidebar:
     st.header("Session")
@@ -199,7 +259,7 @@ with colB:
                 **{f"dr_Action_{m}": alt_actions[m] for m in MEDS},
                 "dr_AssessmentPlan": ap_text.strip(),
             }
-            append_response(RESPONSES_PATH, payload)
+            append_response(RESPONSES_PATH, payload, CRED_PATH)
             st.success(f"Saved to {RESPONSES_PATH}")
 
     if st.button("Next case ➜"):
@@ -208,8 +268,8 @@ with colB:
 
 st.divider()
 st.subheader("Responses")
-if os.path.exists(RESPONSES_PATH):
-    resp = pd.read_csv(RESPONSES_PATH)
+resp = load_cases(RESPONSES_PATH, CRED_PATH)
+if resp is not None and len(resp) > 0:
     st.dataframe(resp.tail(50), use_container_width=True)
     st.download_button(
         "Download responses.csv",
