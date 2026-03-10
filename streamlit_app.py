@@ -64,7 +64,7 @@ def ensure_case_id(df: pd.DataFrame) -> pd.DataFrame:
 def load_cases(path: str, cred_path:str) -> pd.DataFrame:
     selected_fields="files(id,name,webViewLink)"
     #g_drive_service=GoogleDriveService(cred_path).build_drive()
-    stream = streamlit_secrets_to_bytesio(cred_path)
+    stream = streamlit_secrets_to_bytesio('sheet_api')
     g_drive_service=GoogleDriveServiceStream(stream).build_drive()
 
     list_file=g_drive_service.files().list(fields=selected_fields).execute()
@@ -88,7 +88,7 @@ def load_cases(path: str, cred_path:str) -> pd.DataFrame:
 #    df_row.to_csv(path, mode="a", header=write_header, index=False)
     
 def append_response(path: str, payload: list, cred_path:str):
-    stream = streamlit_secrets_to_bytesio(cred_path)
+    stream = streamlit_secrets_to_bytesio('sheet_api')
     client = GoogleDriveServiceStream(stream).build_sheet()
     
     #client = GoogleDriveService(cred_path).build_sheet()
