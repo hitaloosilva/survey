@@ -8,8 +8,8 @@ from g_drive_service import GoogleDriveService, GoogleDriveServiceDict
 from io import BytesIO
 
 CRED_PATH = "sheet_credential.json"
-CASES_PATH = "cases.csv"
-RESPONSES_PATH = "simulated_cases"
+CASES_PATH = "simulated_cases"
+RESPONSES_PATH = "responses.csv"
 
 MEDS = ["RAASi", "BB", "MRA", "SGLT2i"]
 ACTION_CHOICES = ["no_change", "initiate", "up-titrate", "down-titrate", "stop"]
