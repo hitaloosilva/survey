@@ -20,9 +20,9 @@ def streamlit_secrets_to_bytesio(key: str) -> BytesIO:
     if key not in st.secrets:
         raise KeyError(f"Key '{key}' not found in Streamlit secrets.")
     
-    data = st.secrets[key]
-    json_str = json.dumps(data)
-        
+    data = st.secrets[key]    
+    json_str = json.dumps(dict(data))
+
     byte_stream = BytesIO(json_str.encode('utf-8'))
     byte_stream.seek(0)
     return byte_stream
