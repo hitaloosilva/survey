@@ -80,7 +80,7 @@ def load_cases(path: str, cred_path:str) -> pd.DataFrame:
 #    write_header = not os.path.exists(path)
 #    df_row.to_csv(path, mode="a", header=write_header, index=False)
     
-def append_response(path: str, payload: list, cred_path:str):
+def append_response(path: str, payload: dict, cred_path:str):
     stream = streamlit_secrets_to_bytesio('sheet_api')
     client = GoogleDriveServiceDict(stream).build_sheet()
     
@@ -89,10 +89,9 @@ def append_response(path: str, payload: list, cred_path:str):
     # Accessing the desired spreadsheet 
     spreadsheet = client.open(path) 
     worksheet = spreadsheet.sheet1 
-    # Data to append 
-    data = payload 
     # Appending the data 
-    worksheet.append_row(data) 
+    payload_list = [payload.get(col, "") for col in ["timestamp", "reviewer", "Case_ID", "agree", "engine_Action"] + [f"dr_Action_{m}" for m in MEDS] + ["dr_AssessmentPlan"]]  
+    worksheet.append_row(payload_list) 
 
 def _normalize_age_sex(row: pd.Series):
     age = _safe_get(row, "Age", _safe_get(row, "age", ""))
