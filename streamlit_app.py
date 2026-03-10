@@ -13,6 +13,7 @@ RESPONSES_PATH = "responses.csv"
 
 MEDS = ["RAASi", "BB", "MRA", "SGLT2i"]
 ACTION_CHOICES = ["no_change", "initiate", "up-titrate", "down-titrate", "stop"]
+resp = None
 
 
 # Streamlit secreats to ByteIO stream for g_drive_service
@@ -253,6 +254,7 @@ with colB:
             }
             append_response(RESPONSES_PATH, payload, CRED_PATH)
             st.success(f"Saved to {RESPONSES_PATH}")
+            resp = load_cases(RESPONSES_PATH, CRED_PATH)
 
     if st.button("Next case ➜"):
         st.session_state["case_idx"] = min(st.session_state["case_idx"] + 1, len(cases) - 1)
