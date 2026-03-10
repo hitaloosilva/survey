@@ -261,17 +261,20 @@ with colB:
 st.divider()
 st.subheader("Responses")
 resp = load_cases(RESPONSES_PATH, CRED_PATH)
-print(resp)
 if resp is not None and len(resp) > 0:
     # FILTER BY REVIEWER
     if reviewer.strip() != "":
-        resp = resp[resp["reviewer"] == reviewer.strip()]   
-    st.dataframe(resp.tail(50), use_container_width=True)
-    st.download_button(
-        "Download responses.csv",
-        data=resp.to_csv(index=False).encode("utf-8"),
-        file_name="responses.csv",
-        mime="text/csv",
-    )
+        resp = resp[resp["reviewer"] == reviewer.strip()]
+        # drop time and reviewer columns for better readability
+        resp = resp.drop(columns=["TIME", "REVIEWER"], errors="ignore")
+        st.dataframe(resp.tail(50), use_container_width=True)
+        st.download_button(
+            "Download responses.csv",
+            data=resp.to_csv(index=False).encode("utf-8"),
+            file_name="responses.csv",
+            mime="text/csv",
+        )
+    else:
+        st.info("No responses saved yet.")    
 else:
     st.info("No responses saved yet.")
