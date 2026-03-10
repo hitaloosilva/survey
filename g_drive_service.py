@@ -13,13 +13,13 @@ class GoogleDriveServiceDict:
         
 
     def build_drive(self):
-        creds = ServiceAccountCredentials.from_json_keyfile_name(self.cred_dict, self._SCOPES)
+        creds = ServiceAccountCredentials.from_json_keyfile_dict(self.cred_dict, self._SCOPES)
         service = build('drive', 'v3', credentials=creds)
 
         return service
         
     def build_sheet(self):       
-        creds = ServiceAccountCredentials.from_json_keyfile_name(self.cred_dict, self._SCOPES)
+        creds = ServiceAccountCredentials.from_json_keyfile_dict(self.cred_dict, self._SCOPES)
         service = gspread.authorize(creds) 
 
         return service
