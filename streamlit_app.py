@@ -54,7 +54,7 @@ def ensure_case_id(df: pd.DataFrame) -> pd.DataFrame:
 #    df = ensure_case_id(df)
 #    return df.reset_index(drop=True)
     
-@st.cache_data(show_spinner=False)
+#@st.cache_data(show_spinner=False)
 def load_cases(path: str, cred_path:str) -> pd.DataFrame:
     selected_fields="files(id,name,webViewLink)"
     #g_drive_service=GoogleDriveService(cred_path).build_drive()
