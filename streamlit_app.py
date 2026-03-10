@@ -261,6 +261,7 @@ with colB:
 st.divider()
 st.subheader("Responses")
 resp = load_cases(RESPONSES_PATH, CRED_PATH)
+print(resp)
 if resp is not None and len(resp) > 0:
     st.dataframe(resp.tail(50), use_container_width=True)
     st.download_button(
