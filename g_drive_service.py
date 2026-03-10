@@ -6,20 +6,20 @@ import json
 
 
 
-class GoogleDriveServiceStream:
-    def __init__(self, credentials_stream):
+class GoogleDriveServiceDict:
+    def __init__(self, credentials_dict):
         self._SCOPES=['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
-        self.stream = credentials_stream
+        self.cred_dict = credentials_dict
         
 
     def build_drive(self):
-        creds = ServiceAccountCredentials.from_stream(self.stream.getvalue())
+        creds = ServiceAccountCredentials.from_json_keyfile_name(self.cred_dict, self._SCOPES)
         service = build('drive', 'v3', credentials=creds)
 
         return service
         
     def build_sheet(self):       
-        creds = ServiceAccountCredentials.from_json_keyfile_name(self.stream.getvalue())
+        creds = ServiceAccountCredentials.from_json_keyfile_name(self.cred_dict, self._SCOPES)
         service = gspread.authorize(creds) 
 
         return service

@@ -4,7 +4,7 @@ import hashlib
 from datetime import datetime
 import pandas as pd
 import streamlit as st
-from g_drive_service import GoogleDriveService, GoogleDriveServiceStream
+from g_drive_service import GoogleDriveService, GoogleDriveServiceDict
 from io import BytesIO
 
 CRED_PATH = "sheet_credential.json"
@@ -25,7 +25,7 @@ def streamlit_secrets_to_bytesio(key: str) -> BytesIO:
 
     byte_stream = BytesIO(json_str.encode('utf-8'))
     byte_stream.seek(0)
-    return byte_stream
+    return dict(data)
     
 
 def _safe_get(row: pd.Series, col: str, default=""):
@@ -58,13 +58,13 @@ def load_cases(path: str, cred_path:str) -> pd.DataFrame:
     selected_fields="files(id,name,webViewLink)"
     #g_drive_service=GoogleDriveService(cred_path).build_drive()
     stream = streamlit_secrets_to_bytesio('sheet_api')
-    g_drive_service=GoogleDriveServiceStream(stream).build_drive()
+    g_drive_service=GoogleDriveServiceDict(stream).build_drive()
 
     list_file=g_drive_service.files().list(fields=selected_fields).execute()
     print(list_file.get("files"))
 
     #client = GoogleDriveService(cred_path).build_sheet()
-    client = GoogleDriveServiceStream(stream).build_sheet()
+    client = GoogleDriveServiceDict(stream).build_sheet()
     spreadsheet = client.open(path) 
     worksheet = spreadsheet.sheet1 
     worksheet_data = worksheet.get_all_records()
@@ -82,7 +82,7 @@ def load_cases(path: str, cred_path:str) -> pd.DataFrame:
     
 def append_response(path: str, payload: list, cred_path:str):
     stream = streamlit_secrets_to_bytesio('sheet_api')
-    client = GoogleDriveServiceStream(stream).build_sheet()
+    client = GoogleDriveServiceDict(stream).build_sheet()
     
     #client = GoogleDriveService(cred_path).build_sheet()
     
