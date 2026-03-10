@@ -265,6 +265,7 @@ resp = load_cases(RESPONSES_PATH, CRED_PATH)
 if resp is not None and len(resp) > 0:
     # FILTER BY REVIEWER
     if reviewer.strip() != "":
+        print(resp)
         resp = resp[resp["REVIEWER"] == reviewer.strip()]
         # drop time and reviewer columns for better readability
         resp = resp.drop(columns=["TIME", "REVIEWER", "Case_ID"], errors="ignore")
