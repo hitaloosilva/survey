@@ -269,6 +269,7 @@ if resp is not None and len(resp) > 0:
         resp = resp[resp["REVIEWER"] == reviewer.strip()]
         # drop time and reviewer columns for better readability
         resp = resp.drop(columns=["TIME", "REVIEWER", "Case_ID"], errors="ignore")
+        print(resp)
         st.dataframe(resp.tail(50), use_container_width=True)
         st.download_button(
             "Download responses.csv",
