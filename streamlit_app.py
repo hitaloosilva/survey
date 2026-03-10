@@ -264,7 +264,7 @@ resp = load_cases(RESPONSES_PATH, CRED_PATH)
 if resp is not None and len(resp) > 0:
     # FILTER BY REVIEWER
     if reviewer.strip() != "":
-        resp = resp[resp["reviewer"] == reviewer.strip()]
+        resp = resp[resp["REVIEWER"] == reviewer.strip()]
         # drop time and reviewer columns for better readability
         resp = resp.drop(columns=["TIME", "REVIEWER"], errors="ignore")
         st.dataframe(resp.tail(50), use_container_width=True)
