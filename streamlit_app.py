@@ -21,15 +21,8 @@ def streamlit_secrets_to_bytesio(key: str) -> BytesIO:
         raise KeyError(f"Key '{key}' not found in Streamlit secrets.")
     
     data = st.secrets[key]
-    if isinstance(data, dict):
-        json_str = json.dumps(data)
-
-    elif isinstance(data, str):
-        json_str = data
-
-    else:
-        raise ValueError(f"Unsupported data type for key '{key}'. Must be dict or JSON string.")
-    
+    json_str = json.dumps(data)
+        
     byte_stream = BytesIO(json_str.encode('utf-8'))
     byte_stream.seek(0)
     return byte_stream
