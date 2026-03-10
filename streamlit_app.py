@@ -263,6 +263,9 @@ st.subheader("Responses")
 resp = load_cases(RESPONSES_PATH, CRED_PATH)
 print(resp)
 if resp is not None and len(resp) > 0:
+    # FILTER BY REVIEWER
+    if reviewer.strip() != "":
+        resp = resp[resp["reviewer"] == reviewer.strip()]   
     st.dataframe(resp.tail(50), use_container_width=True)
     st.download_button(
         "Download responses.csv",
