@@ -254,7 +254,6 @@ with colB:
             }
             append_response(RESPONSES_PATH, payload, CRED_PATH)
             st.success(f"Saved to {RESPONSES_PATH}")
-            resp = load_cases(RESPONSES_PATH, CRED_PATH)
 
     if st.button("Next case ➜"):
         st.session_state["case_idx"] = min(st.session_state["case_idx"] + 1, len(cases) - 1)
@@ -270,7 +269,7 @@ if resp is not None and len(resp) > 0:
         # drop time and reviewer columns for better readability
         resp = resp.drop(columns=["TIME", "REVIEWER", "Case_ID"], errors="ignore")
         print(resp)
-        st.dataframe(resp.tail(50), use_container_width=True)
+        st.dataframe(resp, width='stretch')
         st.download_button(
             "Download responses.csv",
             data=resp.to_csv(index=False).encode("utf-8"),
